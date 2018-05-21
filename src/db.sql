@@ -1,3 +1,5 @@
+drop table product;
+
 create table product
 (
    id                  int not null auto_increment,
@@ -5,7 +7,6 @@ create table product
    price               decimal(8,2),
    remark              longtext,
    date                timestamp default CURRENT_TIMESTAMP,
-   cid                 int,
    primary key (id)
 );
 /* 商品测试用例 */
