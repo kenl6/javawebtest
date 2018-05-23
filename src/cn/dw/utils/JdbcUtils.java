@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 /**
  * @author Ken.Leung
  * @version 2018年5月21日 下午3:22:18 说明：此类为工具类，主要完成与数据库的连接操作与资源释放(建议构造方法私有)
@@ -35,14 +38,11 @@ public class JdbcUtils {
 			throw new RuntimeException();
 		}
 	}
-	
-	
-	
-	public static void main(String[] args){
-		System.out.println(JdbcUtils.getConnection());
-		System.out.println(JdbcUtils.getConnection());
-		System.out.println(JdbcUtils.getConnection());
-		System.out.println(JdbcUtils.getConnection());
+
+	public static void main(String[] args) {
+		// 1：加载配置文件 2：通过getBean获取对象
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring-bean.xml");
+		System.out.println(context.getBean("dataSource"));
 	}
-	
+
 }
