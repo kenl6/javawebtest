@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans 
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+http://www.springframework.org/schema/context 
+http://www.springframework.org/schema/context/spring-context-4.0.xsd 
+http://www.springframework.org/schema/aop 
+http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
+http://www.springframework.org/schema/tx 
+http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<!-- 上面的声明式事务,如API所说是一个样板,下面配置的日志与异常,才是AOP的标准写法 -->
+	<bean id="aop" class="cn.dw.utils.AopClass" />
+	<!-- 指定aop的类 -->
+	<aop:config>
+	    <!-- 告知spring切面类 -->
+		<aop:aspect ref="aop">
+			<aop:pointcut expression="execution(* cn.dw.service.*.*(..))" id="pt"/>
+			<!-- 此处配置通知,通知分为前置、后置、环绕、异常 
+			     method:指定要切入的方法(通知)
+			     aop:before:代表前置通知
+			<aop:before method="logs" pointcut="execution(* cn.dw.service.*.*(..))"/>
+			-->
+			<!--after-returning:只要正常结束,就会切入通知,一般用来实现日志操作  -->
+			<aop:after-returning  method="logs" pointcut-ref="pt" />
+			
+			<!-- 结束就会切入,类似finally主要用于释放资源 
+			<aop:after method="logs" pointcut-ref="pt"/>
+			-->
+			<!-- 出现异常才会被切入,一般用来捕获异常信息 -->
+			<aop:after-throwing method="ex" throwing="e"  pointcut-ref="pt"/>
+		</aop:aspect>
+	</aop:config>
+	
+</beans>
+
+
+
+
+
+
+

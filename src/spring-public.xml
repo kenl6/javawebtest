@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans 
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+http://www.springframework.org/schema/context 
+http://www.springframework.org/schema/context/spring-context-4.0.xsd 
+http://www.springframework.org/schema/aop 
+http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
+http://www.springframework.org/schema/tx 
+http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<!-- 给连接池配置连接数据库四大参数 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/web" />
+		<property name="user" value="root" />
+		<property name="password" value="123456" />
+	</bean>
+	<!-- 实现了访问数据库的增删改操作， -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<!-- 配置productDao依赖JdbcTemplate -->
+	<bean id="productDao" class="cn.dw.dao.ProductDaoImpl">
+		<property name="jdbcTemplate" ref="jdbcTemplate"></property>
+	</bean>
+
+	<bean id="productService" class="cn.dw.service.ProductServiceImpl">
+		<property name="productDao" ref="productDao" />
+	</bean>
+	<!-- 配置声明式事务: 基于AOP的实现,由于Spring高度封装提供的是模板,但是后面日志、异常还是需要AOP的概念 -->
+	<!-- 配置事务管理器 -->
+	<bean id="dt"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- spring对事务管理,提供了一个样板的风格,我们只需要配置模板即可 -->
+	<!-- advice:就是在运行时候动态切入的代码:如果在核心代码之前,称为前置通知,核心代码之后则称为后置通知 -->
+	<!-- 此处的通知其实就是事务,因此advice需要依赖事务管理器 -->
+	<tx:advice id="ad" transaction-manager="dt">
+		<tx:attributes>
+			<!-- 配置哪些方法需要切入事务 -->
+			<!-- save* + update* + delete* 方法都需要切入事务, REQUIRED:代表必须,如果没有事务则动态切入 -->
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<!-- getByID, queryByName 犹豫查询不需要造成数据库的改变,因此查询是不需要事务 -->
+			<tx:method name="*" propagation="NEVER" />
+		</tx:attributes>
+	</tx:advice>
+	<!-- 上面仅仅是配置哪些方法需要切入事务,但是并没有告知事务运行时切入哪个层(Service Dao) -->
+	<aop:config>
+		<!-- pointcut:代表的是切面表达式语法 execution(* cn.dw.service.*.*(..)) * 代表此方法有无返回值都可 
+			cn.dw.service: 代表要切入的包,一般都是存储service的包 cn.dw.service.*:代表当前包的所有类 cn.dw.service.*.*: 
+			代表当前包的所有类的所有方法 (..): 有无参数都可以 -->
+		<aop:pointcut expression="execution(* cn.dw.service.*.*(..))"
+			id="pt" />
+		<!-- tx + aop的配置,就是一个完整的声明式事务 -->
+		<aop:advisor advice-ref="ad" pointcut-ref="pt" />
+	</aop:config>
+</beans>
+
+
+
+
+
+
+
