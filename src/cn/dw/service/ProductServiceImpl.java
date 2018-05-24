@@ -11,6 +11,7 @@ import cn.dw.model.Product;
 public class ProductServiceImpl {
 	// spring通过xml的配置取代了硬编码,依赖都要交给Spring管理
 	private ProductDaoImpl productDao = null;
+	
 
 	// 通过set注入
 	public void setProductDao(ProductDaoImpl productDao) {
